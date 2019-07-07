@@ -406,7 +406,9 @@ private[hive] class HiveClientImpl(
         unsupportedFeatures += "partitioned view"
       }
 
-      val properties = Option(h.getParameters).map(_.asScala.toMap).orNull
+      val properties = Option(h.getParameters)
+        .map(_.asScala.toMap.mapValues(_.replaceAll("\\\\", "")))
+        .orNull
 
       // Hive-generated Statistics are also recorded in ignoredProperties
       val ignoredProperties = scala.collection.mutable.Map.empty[String, String]
@@ -461,7 +463,7 @@ private[hive] class HiveClientImpl(
           serde = Option(h.getSerializationLib),
           compressed = h.getTTable.getSd.isCompressed,
           properties = Option(h.getTTable.getSd.getSerdeInfo.getParameters)
-            .map(_.asScala.toMap).orNull
+            .map(_.asScala.toMap.mapValues(_.replaceAll("\\\\", ""))).orNull
         ),
         // For EXTERNAL_TABLE, the table properties has a particular field "EXTERNAL". This is added
         // in the function toHiveTable.
